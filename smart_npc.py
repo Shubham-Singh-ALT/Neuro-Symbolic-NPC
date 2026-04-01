@@ -4,22 +4,18 @@ import time
 import google.generativeai as genai
 from npc_env import SmartNPCEnv
 
-# --- SETTINGS ---
-# Set this to False if you run out of API quota. Set to True for the presentation!
+
 USE_API = False 
 
-# !!! PASTE YOUR REAL API KEY BELOW !!!
 API_KEY = "AIzaSyC94R3cf1y16Og5GJS48DtIYY5cq7ROmscE" 
 
 if USE_API:
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash-8b') # Using 8b to save quota
+    model = genai.GenerativeModel('gemini-1.5-flash-8b') 
 
-# --- INITIALIZATION ---
 env = SmartNPCEnv()
 q_table = np.zeros((env.grid_size, env.grid_size, len(env.action_space)))
 
-# --- Q-LEARNING TRAINING (The Neural Brain) ---
 print("🧠 Training the NPC Brain... (Running 500 simulations)")
 learning_rate = 0.1
 discount_factor = 0.9      
@@ -49,14 +45,12 @@ print("🎬 THE NEURO-SYMBOLIC NPC IN ACTION:")
 def generate_npc_dialogue(current_state, reward):
     """Handles both the Real AI Voice and the Backup Logic."""
     
-    # 1. THE BACKUP LOGIC (Used when USE_API = False)
     if not USE_API:
         if reward == 10: return "🏆 Goal reached! I am the ultimate algorithm!"
         if reward == -10: return "💥 Ouch! Who planted that tree there?!"
         if current_state == (0,0): return "🤖 Systems online. Pathfinding initialized..."
         return random.choice(["*beep*", "*whirrr*", "Calculating...", "Moving...", "Step taken."])
 
-    # 2. THE REAL AI VOICE (Used when USE_API = True)
     if reward == 10:
         scenario = "You just successfully reached your goal! Generate a sarcastic one-liner."
     elif reward == -10:
@@ -74,16 +68,14 @@ def generate_npc_dialogue(current_state, reward):
     except Exception as e:
         return f"*bzzzt* Voice module glitch: {str(e)[:40]}..."
 
-# --- PLAYING THE GAME ---
 state = env.reset()
 done = False
 env.render()
 
-# Opening Line
 print(f"💬 NPC: \"{generate_npc_dialogue(state, 0)}\"\n")
 
 while not done:
-    time.sleep(4.0) # Slowed down to avoid API spamming
+    time.sleep(4.0) 
     action = np.argmax(q_table[state[0], state[1], :]) 
     
     state, reward, done = env.step(action)
